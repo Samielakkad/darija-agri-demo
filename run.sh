@@ -1,1 +1,2 @@
-cd /mnt/workspace/darija_vlm_demo && python3 app_demo.py
+#!/usr/bin/env bash
+cd "$(dirname "$0")" && python3 app_demo.py
