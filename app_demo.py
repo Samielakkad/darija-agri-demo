@@ -4,11 +4,10 @@ Wraps Qwen2.5-VL-3B + LoRA adapter (crop top-1 0.443).
 HONESTY: only shows crop ID + Darija text + confidence.
 Disease & Treatment are Phase 2 (not trained).
 """
-import json, re, time, unicodedata, os
+import json, re, time, unicodedata
 from pathlib import Path
 import torch
 import gradio as gr
-from PIL import Image
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration, BitsAndBytesConfig
 from peft import PeftModel
 
@@ -84,8 +83,7 @@ def load_model():
         min_pixels=256*28*28, max_pixels=1280*28*28,
     )
     if USE_GPU:
-        from transformers import BitsAndBytesConfig as BnB
-        bnb_cfg = BnB(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
+        bnb_cfg = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_use_double_quant=True, bnb_4bit_quant_type="nf4")
         base = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             BASE_MODEL, quantization_config=bnb_cfg, device_map="auto",
@@ -163,7 +161,7 @@ def build_ui():
                 darija_out = gr.Textbox(label="🗣️ Darija response",
                     interactive=False, lines=6)
                 conf_out = gr.Textbox(label="✅ Confidence / gate", interactive=False)
-                gr.Textbox(label="🦫 Disease & Treatment",
+                gr.Textbox(label="🌿 Disease & Treatment",
                     value="Phase 2 — not yet trained. No disease supervision in current model.",
                     interactive=False)
         btn.click(predict, inputs=[img, q], outputs=[crop_out, darija_out, conf_out])
