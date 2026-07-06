@@ -14,7 +14,7 @@ from peft import PeftModel
 
 HERE = Path(__file__).resolve().parent
 BASE_MODEL = "Qwen/Qwen2.5-VL-3B-Instruct"  # auto-downloaded from HuggingFace
-ADAPTER_DIR = str(pathlib.Path(__file__).parent / "lora_adapter")
+ADAPTER_DIR = str(HERE / "lora_adapter")
 ALIASES_PATH = HERE / "crop_aliases.json"
 SEED = 42
 MAX_NEW_TOKENS = 1200
