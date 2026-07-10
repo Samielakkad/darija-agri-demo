@@ -25,7 +25,7 @@ run.bat
 Linux / macOS:
 
 ```bash
-pip install torch transformers accelerate peft gradio qwen-vl-utils bitsandbytes Pillow
+pip install -r requirements.txt
 ./run.sh
 ```
 
