@@ -1,0 +1,23 @@
+# Pinned dependencies for the Darija Agricultural VLM demo.
+#
+# Why pinned: this demo targets a specific API surface. transformers>=4.49 is the
+# first release exposing Qwen2_5_VLForConditionalGeneration; an unpinned install
+# would eventually pull a release that renames/moves that class and silently break
+# LoRA adapter loading. The torch trio caps at 2.5.1 for the cu121 build.
+#
+# GPU (CUDA 12.1): the --extra-index-url below lets pip pick the +cu121 torch
+# wheels (4-bit NF4 loading via bitsandbytes needs a CUDA build). On a machine
+# with no matching CUDA wheel (e.g. macOS, or CPU-only) pip transparently falls
+# back to the default PyPI build — the demo still runs on CPU in fp32, just slow.
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+torch==2.5.1
+torchvision==0.20.1
+torchaudio==2.5.1
+transformers==4.49.0
+accelerate==1.4.0
+peft==0.15.2
+gradio==5.16.0
+qwen-vl-utils==0.0.8
+bitsandbytes==0.45.0
+Pillow==11.1.0
