@@ -12,6 +12,7 @@ from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration, Bits
 from peft import PeftModel
 
 from crop_matching import crop_match
+from prompting import build_crop_messages
 
 HERE = Path(__file__).resolve().parent
 BASE_MODEL = "Qwen/Qwen2.5-VL-3B-Instruct"  # auto-downloaded from HuggingFace
@@ -20,12 +21,6 @@ ALIASES_PATH = HERE / "crop_aliases.json"
 SEED = 42
 MAX_NEW_TOKENS = 1200
 USE_GPU = torch.cuda.is_available()
-
-PROMPT = (
-    "Describe the crop in this image in Moroccan Darija language. "
-    "Say the crop name and describe what you see. "
-    "Respond only in Darija."
-)
 
 BANNER = (
     "⚠️ **Prototype** — identifies crop + responds in Darija. "
@@ -67,11 +62,7 @@ def predict(image, question):
     if image is None:
         return "", "", "Please upload an image."
     torch.manual_seed(SEED)
-    q = question.strip() if question and question.strip() else PROMPT
-    messages = [{"role": "user", "content": [
-        {"type": "image", "image": image},
-        {"type": "text", "text": q},
-    ]}]
+    messages = build_crop_messages(image, question)
     text_input = processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True)
     inputs = processor(text=[text_input], images=[image], return_tensors="pt")
@@ -115,7 +106,7 @@ def build_ui():
         with gr.Row():
             with gr.Column(scale=1):
                 img = gr.Image(type="pil", label="Crop image")
-                q = gr.Textbox(label="Optional question (Darija)",
+                q = gr.Textbox(label="Optional crop-ID question (Darija)",
                     placeholder="شنو هاد لمحصول?")
                 btn = gr.Button("Analyze", variant="primary")
                 if ex:
@@ -123,7 +114,7 @@ def build_ui():
                         label="Click to try")
             with gr.Column(scale=1):
                 crop_out = gr.Textbox(label="🌾 Crop (identified)", interactive=False)
-                darija_out = gr.Textbox(label="🗣️ Darija response",
+                darija_out = gr.Textbox(label="🗣️ Darija crop description",
                     interactive=False, lines=6)
                 conf_out = gr.Textbox(label="✅ Confidence / gate", interactive=False)
                 gr.Textbox(label="🌿 Disease & Treatment",
