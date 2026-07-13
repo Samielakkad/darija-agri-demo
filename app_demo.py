@@ -4,12 +4,14 @@ Wraps Qwen2.5-VL-3B + LoRA adapter (crop top-1 0.443).
 HONESTY: only shows crop ID + Darija text + confidence.
 Disease & Treatment are Phase 2 (not trained).
 """
-import json, re, time, unicodedata
+import json, re, time
 from pathlib import Path
 import torch
 import gradio as gr
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration, BitsAndBytesConfig
 from peft import PeftModel
+
+from crop_matching import crop_match
 
 HERE = Path(__file__).resolve().parent
 BASE_MODEL = "Qwen/Qwen2.5-VL-3B-Instruct"  # auto-downloaded from HuggingFace
@@ -29,43 +31,6 @@ BANNER = (
     "⚠️ **Prototype** — identifies crop + responds in Darija. "
     "Disease & treatment are Phase 2 (not yet trained)."
 )
-
-# Arabic normalization (exact replica of eval script)
-ARABIC_DIACRITICS = re.compile(r'[ؐ-ًؚ-ٰٟۖ-ۭ]')
-ARABIC_LETTER_REPLACEMENTS = {
-    'آ': 'ا', 'أ': 'ا', 'إ': 'ا', 'ٱ': 'ا',
-    'ى': 'ي',
-    'ة': 'ه',
-}
-
-def normalize_arabic(text: str) -> list:
-    text = unicodedata.normalize('NFKC', text)
-    text = ARABIC_DIACRITICS.sub('', text)
-    text = text.replace('ـ', '')
-    for src, dst in ARABIC_LETTER_REPLACEMENTS.items():
-        text = text.replace(src, dst)
-    text = re.sub(r"[^a-zA-Z0-9\u0600-\u06ff ]", " ", text)
-    return text.lower().split()
-
-def split_crop_guess(value: str) -> list:
-    return [p.strip() for p in re.split(r'[/,،()]+', value) if p.strip()]
-
-def crop_match(prediction: str, aliases_dict: dict):
-    pred_tokens = normalize_arabic(prediction)
-    pred_compact = ''.join(pred_tokens)
-    best_cls, best_len = None, 0
-    for cls_name, aliases in aliases_dict.items():
-        for alias in aliases:
-            for part in split_crop_guess(alias):
-                part = part.strip()
-                if not part:
-                    continue
-                norm_alias = normalize_arabic(part)
-                compact_alias = ''.join(norm_alias)
-                if (norm_alias and all(t in pred_tokens for t in norm_alias)) or                    (compact_alias and compact_alias in pred_compact):
-                    if len(compact_alias) > best_len:
-                        best_cls, best_len = cls_name, len(compact_alias)
-    return best_cls
 
 # Load crop aliases
 with open(ALIASES_PATH, encoding='utf-8') as f:

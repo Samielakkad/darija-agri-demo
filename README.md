@@ -35,10 +35,20 @@ With a CUDA GPU the base model loads in 4-bit NF4; without one it falls back to 
 
 | path | what |
 |---|---|
-| `app_demo.py` | the whole demo — model load, inference, alias matcher, refusal gate, UI |
+| `app_demo.py` | model load, inference, refusal gate, and UI |
+| `crop_matching.py` | dependency-free Arabic normalization and crop alias matching |
 | `lora_adapter/` | LoRA weights + processor/tokenizer config |
 | `crop_aliases.json` | 30 crop classes → Arabic/Darija aliases |
 | `examples/` | sample images wired into the UI |
+
+## Tests
+
+The matcher tests use only Python's standard library, so they do not load or
+download the model:
+
+```bash
+python -m unittest discover -s tests -v
+```
 
 ## Contact
 
