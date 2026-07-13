@@ -13,6 +13,7 @@ from peft import PeftModel
 
 from crop_matching import crop_match
 from prompting import build_crop_messages
+from runtime_config import load_launch_config
 
 HERE = Path(__file__).resolve().parent
 BASE_MODEL = "Qwen/Qwen2.5-VL-3B-Instruct"  # auto-downloaded from HuggingFace
@@ -124,7 +125,12 @@ def build_ui():
     return demo
 
 if __name__ == "__main__":
+    launch_config = load_launch_config()
     t0 = time.time()
     load_model()
     print("Model loaded in "+str(round(time.time()-t0,1))+"s", flush=True)
-    build_ui().launch(share=True, server_name="0.0.0.0")
+    build_ui().launch(
+        server_name=launch_config.server_name,
+        server_port=launch_config.server_port,
+        share=launch_config.share,
+    )

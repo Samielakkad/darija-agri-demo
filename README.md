@@ -36,6 +36,36 @@ pip install -r requirements.txt
 
 With a CUDA GPU the base model loads in 4-bit NF4; without one it falls back to fp32 on CPU (works, slow).
 
+### Network settings
+
+The demo starts on `http://127.0.0.1:7860` and does not request a public share
+link by default. Override a setting only when the deployment needs it:
+
+| Environment variable | Default | Purpose |
+|---|---:|---|
+| `DARIJA_DEMO_HOST` | `127.0.0.1` | Bind address; use `0.0.0.0` only for deliberate network access |
+| `DARIJA_DEMO_PORT` | `7860` | TCP port, from `1` through `65535` |
+| `DARIJA_DEMO_SHARE` | `false` | Set to `true` to request a Gradio public share link |
+
+Example for access from another device on a trusted local network (Linux/macOS):
+
+```bash
+DARIJA_DEMO_HOST=0.0.0.0 DARIJA_DEMO_PORT=7860 ./run.sh
+```
+
+PowerShell:
+
+```powershell
+$env:DARIJA_DEMO_HOST = "0.0.0.0"
+$env:DARIJA_DEMO_PORT = "7860"
+.\run.bat
+```
+
+Binding to `0.0.0.0` can expose the app to the local network, and a share link
+can expose it publicly. This prototype has no built-in authentication; use either
+option only behind appropriate network controls. Invalid settings stop startup
+before the model is loaded.
+
 ## Layout
 
 | path | what |
@@ -43,6 +73,7 @@ With a CUDA GPU the base model loads in 4-bit NF4; without one it falls back to 
 | `app_demo.py` | model load, inference, refusal gate, and UI |
 | `crop_matching.py` | dependency-free Arabic normalization and crop alias matching |
 | `prompting.py` | crop-only system policy and optional-question handling |
+| `runtime_config.py` | private-by-default, validated Gradio launch settings |
 | `lora_adapter/` | LoRA weights + processor/tokenizer config |
 | `crop_aliases.json` | 30 crop classes → Arabic/Darija aliases |
 | `examples/` | sample images wired into the UI |
