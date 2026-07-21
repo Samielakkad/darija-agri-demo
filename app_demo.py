@@ -11,7 +11,7 @@ import gradio as gr
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration, BitsAndBytesConfig
 from peft import PeftModel
 
-from crop_matching import crop_match
+from crop_matching import crop_match, crop_match_fields
 from prompting import build_crop_messages
 from runtime_config import load_launch_config
 
@@ -77,14 +77,18 @@ def predict(image, question):
     darija_text = raw.strip()
     # Parse JSON if present
     m = re.search(r"\{.*\}", darija_text, re.S)
-    crop_guess_text = darija_text
+    matched = None
     if m:
         try:
             parsed = json.loads(m.group())
-            crop_guess_text = parsed.get("crop", "") + " " + parsed.get("description", "")
+            if isinstance(parsed, dict):
+                matched = crop_match_fields(
+                    parsed.get("crop"), parsed.get("description"), CROP_ALIASES
+                )
         except Exception:
             pass
-    matched = crop_match(crop_guess_text, CROP_ALIASES)
+    if matched is None:
+        matched = crop_match(darija_text, CROP_ALIASES)
     if matched:
         confidence = "High (alias matched)"
         crop_out = matched
