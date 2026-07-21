@@ -2,7 +2,12 @@ import json
 import unittest
 from pathlib import Path
 
-from crop_matching import crop_match, normalize_arabic, split_crop_guess
+from crop_matching import (
+    crop_match,
+    crop_match_fields,
+    normalize_arabic,
+    split_crop_guess,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,6 +72,20 @@ class CropMatchTests(unittest.TestCase):
         self.assertEqual(
             split_crop_guess("القمح / الحنطة، wheat (grain)"),
             ["القمح", "الحنطة", "wheat", "grain"],
+        )
+
+    def test_structured_crop_field_takes_precedence_over_description(self):
+        self.assertEqual(
+            crop_match_fields(
+                "الروز",
+                "ماشي الذرة الرفيعة",
+                self.aliases,
+            ),
+            "rice",
+        )
+        self.assertEqual(
+            crop_match_fields("unknown", "الذرة الرفيعة", self.aliases),
+            "jowar",
         )
 
 

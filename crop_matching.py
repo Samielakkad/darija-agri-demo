@@ -85,3 +85,17 @@ def crop_match(
                     best_length = compact_length
 
     return best_class
+
+
+def crop_match_fields(
+    primary: object,
+    fallback: object,
+    aliases: Mapping[str, Sequence[str]],
+) -> str | None:
+    """Match a structured primary field before consulting fallback text."""
+    for value in (primary, fallback):
+        if isinstance(value, str):
+            matched = crop_match(value, aliases)
+            if matched is not None:
+                return matched
+    return None
